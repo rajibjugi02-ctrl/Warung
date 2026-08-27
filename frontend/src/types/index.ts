@@ -98,7 +98,7 @@ export interface Payment {
   id: string;
   orderId: string;
   transactionId: string;
-  method: 'QRIS' | 'BCA_VA' | 'BRI_VA' | 'BNI_VA' | 'MANDIRI_VA' | 'GOPAY' | 'SHOPEEPAY';
+  method: 'QRIS' | 'BCA_VA' | 'BRI_VA' | 'BNI_VA' | 'BSI_VA' | 'CASH' | 'GOPAY' | 'SHOPEEPAY';
   amount: number;
   status: 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED';
   qrisString?: string | null;

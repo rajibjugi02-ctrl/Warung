@@ -19,14 +19,14 @@ import { useToast } from '../contexts/ToastContext';
 import { api } from '../services/api';
 import { formatRupiah } from '../utils/format';
 
-type PaymentMethod = 'QRIS' | 'BCA_VA' | 'BRI_VA' | 'BSI_VA' | 'MANDIRI_VA' | 'GOPAY' | 'SHOPEEPAY';
+type PaymentMethod = 'QRIS' | 'BCA_VA' | 'BRI_VA' | 'BSI_VA' | 'CASH' | 'GOPAY' | 'SHOPEEPAY';
 
 const paymentOptions = [
   { value: 'QRIS', label: 'QRIS (Semua E-Wallet & Bank)', description: 'Scan QR pakai GoPay, OVO, DANA, ShopeePay, BCA, BRImo, dll.', icon: Smartphone, color: 'text-blue-600 bg-blue-50 border-blue-200' },
   { value: 'BRI_VA', label: 'Bank BRI', description: 'Transfer Rekening BRI Ibu Leni (7222 01008732533)', icon: Building2, color: 'text-sky-700 bg-sky-50 border-sky-200' },
   { value: 'BSI_VA', label: 'Bank BSI (Bank Syariah Indonesia)', description: 'Transfer Rekening BSI Ibu Leni (7367355818)', icon: Building2, color: 'text-teal-700 bg-teal-50 border-teal-200' },
   { value: 'BCA_VA', label: 'Bank BCA', description: 'Transfer Rekening BCA Ibu Leni (0954440491)', icon: Building2, color: 'text-blue-800 bg-blue-50 border-blue-200' },
-  { value: 'MANDIRI_VA', label: 'Mandiri (Livin by Mandiri)', description: 'Transfer via ATM / Livin by Mandiri', icon: Building2, color: 'text-yellow-700 bg-yellow-50 border-yellow-200' },
+  { value: 'CASH', label: 'Bayar Tunai / Cash', description: 'Bayar langsung dengan uang tunai saat mengambil barang di Warung', icon: Wallet, color: 'text-amber-700 bg-amber-50 border-amber-200' },
   { value: 'GOPAY', label: 'GoPay / Gojek', description: 'Bayar langsung lewat aplikasi GoPay', icon: Wallet, color: 'text-green-700 bg-green-50 border-green-200' },
 ];
 

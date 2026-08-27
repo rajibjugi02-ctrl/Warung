@@ -10,7 +10,7 @@ export interface CreatePaymentInput {
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
-  method: 'QRIS' | 'BCA_VA' | 'BRI_VA' | 'BNI_VA' | 'MANDIRI_VA' | 'GOPAY' | 'SHOPEEPAY';
+  method: 'QRIS' | 'BCA_VA' | 'BRI_VA' | 'BNI_VA' | 'CASH' | 'GOPAY' | 'SHOPEEPAY';
 }
 
 export interface PaymentResult {
@@ -94,6 +94,9 @@ export class PaymentService {
           light: '#FFFFFF',
         },
       });
+    } else if (input.method === 'CASH') {
+      // Cash payment requires no online processing
+      paymentUrl = undefined;
     }
 
     // Save payment record in DB

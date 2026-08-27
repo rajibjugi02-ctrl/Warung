@@ -12,6 +12,7 @@ import {
   Building,
   Download,
   ArrowLeft,
+  Wallet,
 } from 'lucide-react';
 import { api } from '../services/api';
 import { Order, Payment } from '../types';
@@ -152,7 +153,17 @@ const PaymentPage: React.FC = () => {
   const isPending = status === 'PENDING';
 
   const itemNames = (order.items || []).map((i) => `• ${i.productName}${i.variantName ? ` (${i.variantName})` : ''} x${i.quantity}`).join('\n');
-  const waMsg = `Halo Warung Lenira, saya sudah melakukan pembayaran untuk pesanan:
+  const waMsg = payment.method === 'CASH'
+    ? `Halo Warung Lenira, saya ingin memesan produk berikut dan akan membayar tunai (cash) saat mengambilnya di warung:
+📋 No. Pesanan: *${order.orderNumber}*
+👤 Nama: *${order.customerName}*
+
+📦 Produk yang dibeli:
+${itemNames}
+
+💰 Total Pembayaran: *${formatRupiah(order.totalAmount)}*
+Mohon disiapkan ya, terima kasih!`
+    : `Halo Warung Lenira, saya sudah melakukan pembayaran untuk pesanan:
 📋 No. Pesanan: *${order.orderNumber}*
 👤 Nama: *${order.customerName}*
 
@@ -251,6 +262,8 @@ Mohon segera diproses ya, terima kasih!`;
               <span className="flex items-center gap-2">
                 {payment.method === 'QRIS' ? (
                   <><Smartphone className="w-5 h-5 text-warung-700" /> Scan QRIS Resmi Toko</>
+                ) : payment.method === 'CASH' ? (
+                  <><Wallet className="w-5 h-5 text-warung-700" /> Pembayaran Tunai / Cash</>
                 ) : (
                   <><Building className="w-5 h-5 text-warung-700" /> Transfer Bank & E-Wallet Toko</>
                 )}
@@ -299,7 +312,7 @@ Mohon segera diproses ya, terima kasih!`;
             )}
 
             {/* Bank Transfer / VA Accounts List */}
-            {payment.method !== 'QRIS' && (
+            {payment.method !== 'QRIS' && payment.method !== 'CASH' && (
               <div className="space-y-4">
                 <div className="text-xs text-stone-600 mb-2">
                   Silakan transfer ke salah satu rekening resmi pemilik Warung Lenira di bawah ini:
@@ -392,6 +405,21 @@ Mohon segera diproses ya, terima kasih!`;
               </div>
             )}
 
+            {payment.method === 'CASH' && (
+              <div className="text-center py-6">
+                <div className="w-16 h-16 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center mx-auto mb-4 border border-amber-250 shadow-2xs">
+                  <Wallet className="w-8 h-8" />
+                </div>
+                <h3 className="font-extrabold text-stone-900 text-base mb-2">Bayar Tunai di Warung</h3>
+                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-sm mx-auto">
+                  Silakan lakukan pembayaran secara tunai (cash) langsung ke kasir Warung Lenira saat Anda mengambil pesanan Anda di warung.
+                </p>
+                <div className="mt-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-950 font-bold text-left max-w-md mx-auto">
+                  💡 Mohon konfirmasikan pesanan Anda lewat WhatsApp dengan tombol di bawah agar segera disiapkan sebelum Anda datang ke warung.
+                </div>
+              </div>
+            )}
+
             {/* WhatsApp Confirmation Button */}
             <div className="mt-5 pt-4 border-t border-stone-100">
               <a
@@ -400,7 +428,7 @@ Mohon segera diproses ya, terima kasih!`;
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-extrabold rounded-2xl transition-all shadow-sm active:scale-98"
               >
-                <span>Kirim Bukti Pembayaran via WhatsApp</span>
+                <span>{payment.method === 'CASH' ? 'Konfirmasi Pesanan via WhatsApp' : 'Kirim Bukti Pembayaran via WhatsApp'}</span>
                 <ExternalLink className="w-4 h-4" />
               </a>
             </div>
