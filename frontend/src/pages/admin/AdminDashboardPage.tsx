@@ -315,35 +315,91 @@ const AdminDashboardPage: React.FC = () => {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Recent Orders */}
-        <div className="bg-white rounded-2xl shadow-card border border-stone-100 p-5">
+        {/* Recent Orders Carousel */}
+        <div className="bg-white rounded-2xl shadow-card border border-stone-100 p-5 relative overflow-hidden">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-stone-800">Pesanan Terbaru</h2>
-            <Link to="/admin/pesanan" className="text-sm text-warung-700 hover:underline flex items-center gap-1">
-              Lihat Semua <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
+            <div>
+              <h2 className="font-extrabold text-stone-850 text-base flex items-center gap-1.5">
+                <Bell className="w-4 h-4 text-amber-500" />
+                Pesanan Terbaru
+              </h2>
+              <p className="text-[10px] text-stone-400 mt-0.5">Geser untuk melihat pesanan masuk terbaru</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const el = document.getElementById('orders-carousel');
+                  if (el) el.scrollBy({ left: -260, behavior: 'smooth' });
+                }}
+                className="w-8 h-8 rounded-full bg-stone-150 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition-all font-bold text-xs"
+                title="Sebelumnya"
+              >
+                ←
+              </button>
+              <button
+                onClick={() => {
+                  const el = document.getElementById('orders-carousel');
+                  if (el) el.scrollBy({ left: 260, behavior: 'smooth' });
+                }}
+                className="w-8 h-8 rounded-full bg-stone-150 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition-all font-bold text-xs"
+                title="Berikutnya"
+              >
+                →
+              </button>
+              <Link to="/admin/pesanan" className="text-xs text-warung-750 hover:underline flex items-center gap-0.5 ml-2 font-bold">
+                Semua <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
-          <div className="space-y-3">
-            {stats?.recentOrders?.slice(0, 6).map((order: any) => (
-              <div key={order.id} className="flex items-center justify-between py-2 border-b border-stone-50 last:border-0">
-                <div>
-                  <div className="text-sm font-semibold text-stone-700">{order.orderNumber}</div>
-                  <div className="text-xs text-stone-400">{order.customerName} • {formatDate(order.createdAt)}</div>
+
+          <div
+            id="orders-carousel"
+            className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x scrollbar-thin scroll-smooth"
+            style={{ scrollbarWidth: 'thin' }}
+          >
+            {stats?.recentOrders && stats.recentOrders.length > 0 ? (
+              stats.recentOrders.map((order: any) => (
+                <div
+                  key={order.id}
+                  className="w-[260px] flex-shrink-0 bg-stone-50/70 border border-stone-200/80 rounded-2xl p-4 snap-start hover:border-warung-200 hover:bg-cream-50/30 transition-all shadow-2xs hover:shadow-xs flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-[11px] font-bold text-stone-400">{formatDate(order.createdAt)}</span>
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                        order.paymentStatus === 'PAID'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : order.paymentStatus === 'PENDING'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-rose-100 text-rose-800'
+                      }`}>
+                        {order.paymentStatus === 'PAID' ? 'LUNAS' : order.paymentStatus}
+                      </span>
+                    </div>
+                    <div className="font-extrabold text-sm text-stone-850 truncate">{order.orderNumber}</div>
+                    <div className="text-xs text-stone-500 font-semibold mt-1 truncate">👤 {order.customerName}</div>
+                    <div className="text-[11px] text-stone-400 mt-0.5 truncate">📞 {order.customerPhone}</div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-stone-200/60 flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] text-stone-400 font-bold">TOTAL TAGIHAN</div>
+                      <div className="text-sm font-black text-warung-900">{formatRupiah(order.totalAmount)}</div>
+                    </div>
+                    <Link
+                      to="/admin/pesanan"
+                      className="px-3.5 py-1.5 bg-warung-800 hover:bg-warung-900 text-white font-extrabold text-[10px] rounded-xl transition-colors shadow-2xs"
+                    >
+                      Proses
+                    </Link>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-bold text-warung-800">{formatRupiah(order.totalAmount)}</div>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                    order.paymentStatus === 'PAID'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : order.paymentStatus === 'PENDING'
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-rose-100 text-rose-700'
-                  }`}>
-                    {order.paymentStatus}
-                  </span>
-                </div>
+              ))
+            ) : (
+              <div className="w-full text-center py-8 text-stone-400 text-xs">
+                Belum ada pesanan terbaru.
               </div>
-            ))}
+            )}
           </div>
         </div>
 
