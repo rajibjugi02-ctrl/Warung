@@ -439,41 +439,23 @@ Mohon segera diproses ya, terima kasih!`;
 
         {/* Actions */}
         <div className="flex flex-col gap-3">
-          {isPaid && (
-            <>
-              <Link
-                to={`/pesanan/${order.id}`}
-                className="w-full flex items-center justify-center gap-2 py-4 bg-warung-800 hover:bg-warung-900 text-white font-extrabold text-sm rounded-2xl transition-all shadow-md active:scale-95"
-              >
-                Lacak Status Pesanan
-              </Link>
-              <Link
-                to="/"
-                className="w-full flex items-center justify-center gap-2 py-3.5 bg-white hover:bg-cream-100 border border-stone-200 text-stone-700 hover:text-stone-900 font-bold text-xs rounded-2xl transition-all shadow-2xs active:scale-95 group"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 text-stone-400 group-hover:text-stone-700 group-hover:-translate-x-1 transition-transform" />
-                <span>Kembali ke Beranda</span>
-              </Link>
-            </>
+          {(isPaid || payment.method === 'CASH') && (
+            <Link
+              to={`/pesanan/${order.id}`}
+              className="w-full flex items-center justify-center gap-2 py-4 bg-warung-800 hover:bg-warung-900 text-white font-extrabold text-sm rounded-2xl transition-all shadow-md active:scale-95"
+            >
+              Lacak Status Pesanan
+            </Link>
           )}
           {isFailed && (
-            <>
-              <Link
-                to={`/checkout`}
-                className="w-full flex items-center justify-center gap-2 py-4 bg-amber-400 hover:bg-amber-300 text-stone-950 font-black text-sm rounded-2xl transition-all shadow-md active:scale-95"
-              >
-                Coba Pesan Ulang
-              </Link>
-              <Link
-                to="/"
-                className="w-full flex items-center justify-center gap-2 py-3.5 bg-white hover:bg-cream-100 border border-stone-200 text-stone-700 hover:text-stone-900 font-bold text-xs rounded-2xl transition-all shadow-2xs active:scale-95 group"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 text-stone-400 group-hover:text-stone-700 group-hover:-translate-x-1 transition-transform" />
-                <span>Kembali ke Beranda</span>
-              </Link>
-            </>
+            <Link
+              to={`/checkout`}
+              className="w-full flex items-center justify-center gap-2 py-4 bg-amber-400 hover:bg-amber-300 text-stone-950 font-black text-sm rounded-2xl transition-all shadow-md active:scale-95"
+            >
+              Coba Pesan Ulang
+            </Link>
           )}
-          {isPending && (
+          {isPending && payment.method !== 'CASH' && (
             <button
               onClick={() => fetchStatus()}
               className="w-full flex items-center justify-center gap-2 py-3.5 bg-white border border-stone-200 text-stone-700 hover:bg-cream-50 text-xs font-bold rounded-2xl transition-all shadow-xs"
@@ -482,6 +464,22 @@ Mohon segera diproses ya, terima kasih!`;
               Perbarui Status Pembayaran
             </button>
           )}
+          {isPending && payment.method === 'CASH' && (
+            <button
+              onClick={() => fetchStatus()}
+              className="w-full flex items-center justify-center gap-2 py-3.5 bg-white border border-stone-200 text-stone-700 hover:bg-cream-50 text-xs font-bold rounded-2xl transition-all shadow-xs"
+            >
+              <RefreshCw className="w-4 h-4 text-stone-500" />
+              Cek Status Pembayaran Tunai
+            </button>
+          )}
+          <Link
+            to="/"
+            className="w-full flex items-center justify-center gap-2 py-3.5 bg-white hover:bg-cream-100 border border-stone-200 text-stone-700 hover:text-stone-900 font-bold text-xs rounded-2xl transition-all shadow-2xs active:scale-95 group"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-stone-400 group-hover:text-stone-700 group-hover:-translate-x-1 transition-transform" />
+            <span>Kembali ke Beranda</span>
+          </Link>
         </div>
       </div>
     </div>
