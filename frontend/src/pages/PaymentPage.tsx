@@ -267,31 +267,28 @@ const PaymentPage: React.FC = () => {
             {/* QRIS Frame */}
             {payment.method === 'QRIS' && (
               <div className="flex flex-col items-center">
-                <div className="relative bg-white rounded-3xl p-5 border-2 border-stone-200 shadow-soft mb-4 group">
-                  {/* QR Scan Corners */}
-                  <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-warung-700 rounded-tl-lg" />
-                  <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-warung-700 rounded-tr-lg" />
-                  <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-warung-700 rounded-bl-lg" />
-                  <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-warung-700 rounded-br-lg" />
-
+                <div className="relative bg-white rounded-3xl p-3 sm:p-4 border-2 border-stone-200 shadow-soft mb-4 group max-w-xs w-full">
                   <img
-                    src={payment.qrisImageUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=WARUNG_LENIRA'}
-                    alt="QRIS Code"
-                    className="w-56 h-56 sm:w-64 sm:h-64 object-contain rounded-xl"
+                    src="/qris-warung-lenira.png"
+                    alt="QRIS Resmi Warung Lenira"
+                    className="w-full h-auto object-contain rounded-2xl"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = payment.qrisImageUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=WARUNG_LENIRA';
+                    }}
                   />
                 </div>
 
                 <div className="text-center mb-3">
-                  <div className="text-sm font-black text-stone-900 uppercase">
-                    WARUNG SEMBAKO & JAJANAN LENIRA
+                  <div className="text-base font-black text-stone-900 uppercase tracking-wide">
+                    WARUNG LENIRA
                   </div>
-                  <div className="text-xs font-semibold text-stone-400">NMID: ID1020039482910</div>
+                  <div className="text-xs font-bold text-stone-500 mt-0.5">NMID: ID1025399533997</div>
                 </div>
 
                 <div className="flex items-center gap-2 mb-4">
                   <a
-                    href={payment.qrisImageUrl || '#'}
-                    download={`QRIS-Lenira-${order.orderNumber}.png`}
+                    href="/qris-warung-lenira.png"
+                    download={`QRIS-Warung-Lenira-${order.orderNumber}.png`}
                     className="inline-flex items-center gap-1.5 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold rounded-xl transition-all shadow-xs"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -300,7 +297,7 @@ const PaymentPage: React.FC = () => {
                 </div>
 
                 <p className="text-xs sm:text-sm text-stone-600 text-center mb-4 leading-relaxed max-w-sm">
-                  Scan kode QR di atas menggunakan aplikasi <strong>GoPay, OVO, Dana, ShopeePay, BCA, BRI</strong>, atau Mobile Banking lainnya.
+                  Scan kode QR di atas menggunakan aplikasi <strong>GoPay, OVO, DANA, ShopeePay, BCA, BRImo, Livin</strong>, atau Mobile Banking lainnya.
                 </p>
               </div>
             )}
