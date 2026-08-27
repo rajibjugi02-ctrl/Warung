@@ -146,7 +146,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return sum + price * item.quantity;
   }, 0);
 
-  const deliveryFee = deliveryType === 'DELIVERY' ? (subtotal > 0 ? 5000 : 0) : 0;
+  const deliveryFee = 0;
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const totalAmount = Math.max(0, subtotal - discountAmount + deliveryFee);
 
