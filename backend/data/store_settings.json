@@ -1,0 +1,36 @@
+{
+  "storeName": "Warung Sembako & Jajanan Lenira",
+  "storeTagline": "Sembako Lengkap & Jajanan Nikmat Harian",
+  "heroBadge": "Warung Sembako & Jajanan Resmi Lenira",
+  "heroTitle": "Sembako Lengkap & Aneka Jajanan Pilihan.",
+  "heroTitleHighlight": "Pesan jadi gampang.",
+  "heroSubtitle": "Belanja kebutuhan pokok dapur, beras pulen, minyak goreng, telur segar, serta aneka jajanan basreng dan camilan renyah. Pembayaran instan via QRIS, pesan online dan tinggal datang ambil langsung di warung.",
+  "stat1Value": "100%",
+  "stat1Label": "Bahan Pilihan",
+  "stat2Value": "4.9 ★",
+  "stat2Label": "Ulasan Pelanggan",
+  "stat3Value": "Instan",
+  "stat3Label": "QRIS Otomatis",
+  "heroCards": [
+    {
+      "title": "Beras & Sembako",
+      "tag": "Kebutuhan Pokok",
+      "image": "http://localhost:5050/uploads/banner-card-1-1787828312653-5015.jpg"
+    },
+    {
+      "title": "Minyak & Telur Segar",
+      "tag": "Segar Harian",
+      "image": "http://localhost:5050/uploads/banner-card-2-1787828315864-7295.jpg"
+    },
+    {
+      "title": "Basreng Daun Jeruk",
+      "tag": "Terfavorit",
+      "image": "http://localhost:5050/uploads/banner-card-3-1787828319003-5069.jpg"
+    },
+    {
+      "title": "Camilan & Snack Gurih",
+      "tag": "Camilan Gurih",
+      "image": "http://localhost:5050/uploads/banner-card-4-1787828321995-5126.jpg"
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  phone        String
+  passwordHash String
+  role         String    @default("CUSTOMER") // "CUSTOMER" | "ADMIN"
+  avatar       String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  addresses    Address[]
+  orders       Order[]
+  reviews      Review[]
+
+  @@map("users")
+}
+
+model Address {
+  id           String   @id @default(uuid())
+  userId       String
+  recipientName String
+  phone        String
+  street       String
+  village      String?  // Kelurahan / Desa
+  district     String?  // Kecamatan
+  city         String?  // Kota/Kabupaten
+  postalCode   String?
+  notes        String?
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?
+  image       String?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id              String             @id @default(uuid())
+  name            String
+  slug            String             @unique
+  description     String
+  price           Float
+  discountPrice   Float?
+  stock           Int                @default(0)
+  soldCount       Int                @default(0)
+  rating          Float              @default(5.0)
+  reviewCount     Int                @default(0)
+  image           String
+  galleryImages   String?            // JSON string of images array
+  unit            String             @default("pcs") // pcs, bungkus, porsi, botol, kg, liter, karung
+  variants        String?            // JSON string of variants array [{ id, name, unit, price, discountPrice, stock }]
+  isActive        Boolean            @default(true)
+  isBestSeller    Boolean            @default(false)
+  isNewArrival    Boolean            @default(true)
+  isConsignment   Boolean            @default(false) // Produk titipan
+  consignmentMakerId String?
+  categoryId      String
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  category        Category           @relation(fields: [categoryId], references: [id])
+  consignmentMaker ConsignmentMaker? @relation(fields: [consignmentMakerId], references: [id])
+  orderItems      OrderItem[]
+  reviews         Review[]
+
+  @@map("products")
+}
+
+model ConsignmentMaker {
+  id           String    @id @default(uuid())
+  name         String    // Nama Pemilik/Mitra (contoh: Bu Siti, Mbak Rini)
+  phone        String    // No WhatsApp
+  address      String?
+  bio          String?   // Cerita/deskripsi pembuat
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  products     Product[]
+
+  @@map("consignment_makers")
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique // e.g. LEN-20260825-001
+  userId          String?
+  customerName    String
+  customerPhone   String
+  customerEmail   String?
+  deliveryType    String      // "PICKUP" (Ambil di warung) | "DELIVERY" (Diantar)
+  deliveryAddress String?
+  deliveryFee     Float       @default(0)
+  notes           String?
+  couponCode      String?
+  discountAmount  Float       @default(0)
+  subtotal        Float
+  totalAmount     Float
+  
+  paymentStatus   String      @default("PENDING") // "PENDING" | "PAID" | "FAILED" | "EXPIRED" | "REFUNDED"
+  orderStatus     String      @default("PENDING") // "PENDING" | "PROCESSING" | "READY" | "DELIVERED" | "COMPLETED" | "CANCELLED"
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            User?       @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  payments        Payment[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  productId   String
+  productName String
+  productImage String?
+  variantName String?  // e.g. "Per Liter", "Per Kg", "Karung 5kg"
+  price       Float
+  quantity    Int
+  subtotal    Float
+  createdAt   DateTime @default(now())
+
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Payment {
+  id              String    @id @default(uuid())
+  orderId         String
+  transactionId   String    @unique
+  method          String    // "QRIS" | "BCA_VA" | "BRI_VA" | "BNI_VA" | "MANDIRI_VA" | "GOPAY" | "SHOPEEPAY"
+  amount          Float
+  status          String    @default("PENDING") // "PENDING" | "PAID" | "FAILED" | "EXPIRED"
+  qrisString      String?
+  qrisImageUrl    String?
+  vaNumber        String?
+  bankName        String?
+  paymentUrl      String?
+  expiredAt       DateTime
+  paidAt          DateTime?
+  rawResponse     String?   // JSON string of payment gateway response
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  productId String
+  userId    String?
+  userName  String
+  rating    Int      @default(5)
+  comment   String
+  createdAt DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@map("reviews")
+}
+
+model Coupon {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  description String?
+  discountType String   @default("FIXED") // "PERCENT" | "FIXED"
+  discountValue Float
+  minOrder    Float     @default(0)
+  maxDiscount Float?
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@map("coupons")
+}
