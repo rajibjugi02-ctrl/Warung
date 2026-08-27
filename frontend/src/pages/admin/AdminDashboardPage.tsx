@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -16,6 +16,7 @@ import {
   X,
   ExternalLink,
   Store,
+  Bell,
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { formatRupiah, formatDate } from '../../utils/format';
@@ -34,7 +35,92 @@ interface AdminStats {
 
 export const AdminLayout: React.FC<{ children: React.ReactNode; title: string }> = ({ children, title }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [newOrderCount, setNewOrderCount] = useState(0);
+  const lastOrderCountRef = useRef<number | null>(null);
   const location = useLocation();
+
+  // Play notification chime
+  const playChime = useCallback(() => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioCtx();
+      const times = [0, 0.18, 0.36];
+      const freqs = [880, 1100, 1320];
+      times.forEach((t, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freqs[i];
+        gain.gain.setValueAtTime(0.35, ctx.currentTime + t);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.3);
+        osc.start(ctx.currentTime + t);
+        osc.stop(ctx.currentTime + t + 0.35);
+      });
+    } catch {}
+  }, []);
+
+  // Poll for new pending orders every 30 seconds
+  useEffect(() => {
+    const checkNewOrders = async () => {
+      try {
+        const token = localStorage.getItem('warung_token');
+        if (!token) return;
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5050/api'}/admin/orders?status=PENDING`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const data = await res.json();
+        const pendingCount: number = (data?.data ?? []).length;
+
+        if (lastOrderCountRef.current === null) {
+          // First load — just set baseline
+          lastOrderCountRef.current = pendingCount;
+          setNewOrderCount(pendingCount);
+          return;
+        }
+
+        if (pendingCount > lastOrderCountRef.current) {
+          const diff = pendingCount - lastOrderCountRef.current;
+          setNewOrderCount(pendingCount);
+          lastOrderCountRef.current = pendingCount;
+
+          // Play chime
+          playChime();
+
+          // Browser push notification
+          if (Notification.permission === 'granted') {
+            new Notification(`🛒 ${diff} Pesanan Baru Masuk!`, {
+              body: `Ada ${diff} pesanan baru menunggu konfirmasi di Warung Lenira.`,
+              icon: '/vite.svg',
+            });
+          } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then((perm) => {
+              if (perm === 'granted') {
+                new Notification(`🛒 ${diff} Pesanan Baru Masuk!`, {
+                  body: `Ada ${diff} pesanan baru menunggu konfirmasi.`,
+                  icon: '/vite.svg',
+                });
+              }
+            });
+          }
+        } else {
+          setNewOrderCount(pendingCount);
+          lastOrderCountRef.current = pendingCount;
+        }
+      } catch {}
+    };
+
+    // Request notification permission on mount
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    checkNewOrders();
+    const interval = setInterval(checkNewOrders, 30_000);
+    return () => clearInterval(interval);
+  }, [playChime]);
 
   const navItems = [
     { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -112,11 +198,12 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title: string }>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.to;
+            const isPesanan = item.to === '/admin/pesanan';
             return (
               <Link
                 key={item.to}
                 to={item.to}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => { setMobileMenuOpen(false); if (isPesanan) setNewOrderCount(0); }}
                 className={`flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all ${
                   isActive
                     ? 'bg-amber-400 text-stone-950 shadow-md font-extrabold'
@@ -124,7 +211,12 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title: string }>
                 }`}
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-stone-950' : 'text-stone-400'}`} />
-                <span>{item.label}</span>
+                <span className="flex-1">{item.label}</span>
+                {isPesanan && newOrderCount > 0 && (
+                  <span className="min-w-[20px] h-5 px-1.5 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center animate-pulse">
+                    {newOrderCount}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -145,6 +237,12 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title: string }>
       <main className="flex-1 lg:ml-64 min-h-screen flex flex-col">
         <div className="bg-white border-b border-stone-200/80 px-4 sm:px-8 py-4 sm:py-5 flex items-center justify-between">
           <h1 className="text-lg sm:text-2xl font-black text-stone-900 tracking-tight">{title}</h1>
+          {newOrderCount > 0 && (
+            <div className="flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2 rounded-2xl text-xs font-bold animate-pulse">
+              <Bell className="w-3.5 h-3.5" />
+              <span>{newOrderCount} pesanan menunggu!</span>
+            </div>
+          )}
         </div>
         <div className="p-4 sm:p-6 lg:p-8 flex-1">{children}</div>
       </main>

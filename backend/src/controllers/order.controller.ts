@@ -4,6 +4,7 @@ import { prisma } from '../utils/prisma';
 import { sendSuccess, sendError } from '../utils/response';
 import { AuthenticatedRequest } from '../middleware/auth.middleware';
 import { PaymentService } from '../services/payment.service';
+import { sendWhatsAppNotification } from '../services/notification.service';
 
 const createOrderSchema = z.object({
   customerName: z.string().min(1, 'Nama pemesan wajib diisi'),
@@ -157,6 +158,26 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
       customerEmail: validated.customerEmail || undefined,
       method: (validated.paymentMethod as any) || 'QRIS',
     });
+
+    // Send WhatsApp notification to owner (non-blocking)
+    const itemNames = orderItemsData.map((i) => `• ${i.productName} x${i.quantity}`).join('\n');
+    const waMessage = [
+      `🛒 *PESANAN BARU MASUK!* 🛒`,
+      ``,
+      `📋 No. Pesanan: *${orderNumber}*`,
+      `👤 Pembeli: *${validated.customerName}*`,
+      `📱 WA: ${validated.customerPhone}`,
+      ``,
+      `📦 Item Pesanan:`,
+      itemNames,
+      ``,
+      `💰 Total: *Rp${totalAmount.toLocaleString('id-ID')}*`,
+      `💳 Metode: ${validated.paymentMethod}`,
+      `🚚 Pengiriman: ${validated.deliveryType === 'PICKUP' ? 'Ambil di Warung' : 'Diantar'}`,
+      ``,
+      `Segera cek Admin Dashboard untuk konfirmasi! ✅`,
+    ].join('\n');
+    sendWhatsAppNotification(waMessage).catch(() => {});
 
     return sendSuccess(
       res,
