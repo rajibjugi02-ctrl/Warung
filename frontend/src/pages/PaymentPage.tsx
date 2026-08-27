@@ -399,7 +399,7 @@ const PaymentPage: React.FC = () => {
             {/* WhatsApp Confirmation Button */}
             <div className="mt-5 pt-4 border-t border-stone-100">
               <a
-                href={`https://wa.me/6281234567890?text=Halo%20Warung%20Lenira%2C%20saya%20sudah%20melakukan%20pembayaran%20untuk%20pesanan%20${order.orderNumber}%20sebesar%20${formatRupiah(order.totalAmount)}.%20Mohon%20dicek%20ya%20terima%20kasih!`}
+                href={`https://wa.me/62895333691222?text=Halo%20Warung%20Lenira%2C%20saya%20sudah%20melakukan%20pembayaran%20untuk%20pesanan%20${order.orderNumber}%20sebesar%20${formatRupiah(order.totalAmount)}.%20Mohon%20dicek%20ya%20terima%20kasih!`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-extrabold rounded-2xl transition-all shadow-sm active:scale-98"

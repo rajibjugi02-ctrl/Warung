@@ -158,7 +158,7 @@ const ConsignmentPage: React.FC = () => {
             </p>
           </div>
           <a
-            href="https://wa.me/6281234567890?text=Halo%20Warung%20Lenira%2C%20saya%20tertarik%20untuk%20menitipkan%20produk%20makanan%20saya."
+            href="https://wa.me/62895333691222?text=Halo%20Warung%20Lenira%2C%20saya%20tertarik%20untuk%20menitipkan%20produk%20makanan%20saya."
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3.5 bg-amber-400 hover:bg-amber-300 text-stone-900 font-extrabold text-xs sm:text-sm rounded-xl transition-all shadow-sm flex-shrink-0 active:scale-95"

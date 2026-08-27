@@ -530,7 +530,7 @@ const HomePage: React.FC = () => {
 
       {/* Floating WhatsApp Quick Action Button */}
       <a
-        href="https://wa.me/6281234567890?text=Halo%20Warung%20Lenira%2C%20saya%20mau%20tanya%20produk%20jajanan"
+        href="https://wa.me/62895333691222?text=Halo%20Warung%20Lenira%2C%20saya%20mau%20tanya%20produk%20jajanan"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-20 lg:bottom-6 right-5 z-40 bg-emerald-600 hover:bg-emerald-500 text-white p-3.5 rounded-full shadow-floating flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
