@@ -10,7 +10,6 @@ import {
   ExternalLink,
   Smartphone,
   Building,
-  Zap,
   Download,
   ArrowLeft,
 } from 'lucide-react';
@@ -28,7 +27,6 @@ const PaymentPage: React.FC = () => {
   const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState<number>(0);
-  const [simulating, setSimulating] = useState(false);
   const [copied, setCopied] = useState(false);
   const pollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const confettiTriggered = useRef(false);
@@ -105,19 +103,6 @@ const PaymentPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
-  const handleSimulateSuccess = async () => {
-    if (!orderId) return;
-    setSimulating(true);
-    try {
-      await api.post('/payments/simulate-success', { orderId });
-      showToast('Simulasi pembayaran berhasil! Memperbarui status...', 'success');
-      setTimeout(() => fetchStatus(), 1000);
-    } catch (err: any) {
-      showToast(err.response?.data?.message || 'Simulasi gagal.', 'error');
-    } finally {
-      setSimulating(false);
-    }
-  };
 
   const copyText = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -420,20 +405,7 @@ Mohon segera diproses ya, terima kasih!`;
               </a>
             </div>
 
-            {/* Sandbox Simulate Button */}
-            <div className="mt-5 pt-4 border-t border-stone-100">
-              <button
-                onClick={handleSimulateSuccess}
-                disabled={simulating}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold rounded-2xl transition-all shadow-sm disabled:opacity-60 active:scale-98"
-              >
-                {simulating ? (
-                  <><RefreshCw className="w-4 h-4 animate-spin" /> Memproses Verifikasi...</>
-                ) : (
-                  <><Zap className="w-4 h-4 text-amber-400" /> 🧪 Simulasi Selesaikan Pembayaran (Test Mode)</>
-                )}
-              </button>
-            </div>
+
           </div>
         )}
 

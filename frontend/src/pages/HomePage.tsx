@@ -38,6 +38,26 @@ const trustFeatures = [
   },
 ];
 
+const customerStories = [
+  {
+    name: 'Ibu Ratna S.',
+    role: 'Pelanggan Setia (Perumahan Griya)',
+    comment: 'Paling suka pesan basreng pedas daun jeruk & lemper ayamnya. Rasanya pas, praktis bayar QRIS langsung siap diambil sore pas pulang kerja.',
+    rating: 5,
+  },
+  {
+    name: 'Budi Hartono',
+    role: 'Warga Ciomas',
+    comment: 'Beras rojolelenya pulen wangi, bisa beli per liter atau per karung. Pelayanan ramah dan respon cepat banget di WhatsApp.',
+    rating: 5,
+  },
+  {
+    name: 'Siti Rahmawati',
+    role: 'Mitra Pembuat Kue Basah',
+    comment: 'Alhamdulillah terbantu banget bisa menitipkan kue sus dan lemper di Warung Lenira. Rekap penjualannya jelas dan transparan.',
+    rating: 5,
+  },
+];
 
 const defaultHeroSettings = {
   heroBadge: 'Warung Sembako & Jajanan Resmi Lenira',
@@ -468,6 +488,42 @@ const HomePage: React.FC = () => {
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= TESTIMONIALS ================= */}
+      <section className="py-14 bg-white border-t border-stone-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-xl mx-auto mb-10">
+            <span className="text-xs font-extrabold text-warung-700 uppercase tracking-wider">Testimoni Warga</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1">Apa Kata Pelanggan Lenira?</h2>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-6">
+            {customerStories.map((story, idx) => (
+              <div
+                key={idx}
+                className="flex flex-col justify-between p-6 bg-cream-50/80 rounded-3xl border border-stone-200/80 hover:border-warung-300 transition-colors shadow-subtle"
+              >
+                <div>
+                  <div className="flex items-center gap-1 text-amber-400 mb-3">
+                    {Array(story.rating)
+                      .fill(null)
+                      .map((_, i) => (
+                        <span key={i}>★</span>
+                      ))}
+                  </div>
+                  <p className="text-xs sm:text-sm text-stone-700 leading-relaxed italic">
+                    "{story.comment}"
+                  </p>
+                </div>
+                <div className="mt-5 pt-4 border-t border-stone-200/60">
+                  <div className="font-bold text-xs text-stone-900">{story.name}</div>
+                  <div className="text-[11px] text-stone-500">{story.role}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
