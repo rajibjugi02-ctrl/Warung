@@ -56,13 +56,19 @@ const AdminReviewsPage: React.FC = () => {
     fetchReviews();
   }, []);
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
     if (!confirm('Hapus ulasan ini? Rating produk terkait akan otomatis dihitung ulang.')) return;
+    setDeletingId(id);
     try {
+      await new Promise((r) => setTimeout(r, 340));
       await api.delete(`/admin/reviews/${id}`);
+      setReviews((prev) => prev.filter((r) => r.id !== id));
+      setTotalReviews((prev) => Math.max(0, prev - 1));
       showToast('Ulasan berhasil dihapus.', 'success');
-      fetchReviews();
     } catch (err: any) {
+      setDeletingId(null);
       showToast(err.response?.data?.message || 'Gagal menghapus ulasan.', 'error');
     }
   };
@@ -172,7 +178,9 @@ const AdminReviewsPage: React.FC = () => {
               {filtered.map((rev) => (
                 <div
                   key={rev.id}
-                  className="p-5 sm:p-6 hover:bg-cream-50/50 transition-colors flex flex-col sm:flex-row sm:items-start justify-between gap-4"
+                  className={`p-5 sm:p-6 transition-colors flex flex-col sm:flex-row sm:items-start justify-between gap-4 ${
+                    deletingId === rev.id ? 'animate-delete-row bg-rose-50' : 'hover:bg-cream-50/50'
+                  }`}
                 >
                   <div className="flex items-start gap-4">
                     {/* Product Thumbnail */}

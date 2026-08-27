@@ -245,13 +245,18 @@ const AdminConsignmentPage: React.FC = () => {
     }
   };
 
-  const handleDeleteProduct = async (id: string) => {
-    if (!confirm('Hapus jajanan titipan ini dari katalog toko?')) return;
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+
+  const handleDeleteProduct = async (id: string, name?: string) => {
+    if (!confirm(`Hapus jajanan titipan ${name ? `"${name}"` : ''} dari katalog toko?`)) return;
+    setDeletingProductId(id);
     try {
+      await new Promise((r) => setTimeout(r, 340));
       await api.delete(`/admin/products/${id}`);
+      setConsignmentProducts((prev) => prev.filter((p) => p.id !== id));
       showToast('Jajanan titipan berhasil dihapus.', 'success');
-      fetchData();
     } catch (err: any) {
+      setDeletingProductId(null);
       showToast(err.response?.data?.message || 'Gagal menghapus produk.', 'error');
     }
   };
@@ -440,7 +445,12 @@ const AdminConsignmentPage: React.FC = () => {
                   </tr>
                 ) : (
                   consignmentProducts.map((p) => (
-                    <tr key={p.id} className="hover:bg-cream-50/60 transition-colors">
+                    <tr
+                      key={p.id}
+                      className={`transition-colors ${
+                        deletingProductId === p.id ? 'animate-delete-row bg-rose-50' : 'hover:bg-cream-50/60'
+                      }`}
+                    >
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-3">
                           <img
@@ -484,11 +494,12 @@ const AdminConsignmentPage: React.FC = () => {
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDeleteProduct(p.id)}
-                            className="p-2 text-stone-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                            onClick={() => handleDeleteProduct(p.id, p.name)}
+                            disabled={deletingProductId === p.id}
+                            className="p-2 text-stone-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all disabled:opacity-40"
                             title="Hapus Jajanan"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className={`w-4 h-4 ${deletingProductId === p.id ? 'animate-spin' : ''}`} />
                           </button>
                         </div>
                       </td>

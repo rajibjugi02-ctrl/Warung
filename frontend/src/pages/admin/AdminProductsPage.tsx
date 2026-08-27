@@ -205,13 +205,18 @@ const AdminProductsPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus produk ini?')) return;
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (id: string, name?: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus ${name ? `produk "${name}"` : 'produk ini'}?`)) return;
+    setDeletingId(id);
     try {
+      await new Promise((r) => setTimeout(r, 340));
       await api.delete(`/admin/products/${id}`);
+      setProducts((prev) => prev.filter((p) => p.id !== id));
       showToast('Produk berhasil dihapus.', 'success');
-      fetchProducts();
     } catch (err: any) {
+      setDeletingId(null);
       showToast(err.response?.data?.message || 'Gagal menghapus produk.', 'error');
     }
   };
@@ -291,7 +296,12 @@ const AdminProductsPage: React.FC = () => {
                   const isUnlimited = product.stock >= 999;
 
                   return (
-                    <tr key={product.id} className="hover:bg-cream-50/60 transition-colors">
+                    <tr
+                      key={product.id}
+                      className={`transition-colors ${
+                        deletingId === product.id ? 'animate-delete-row bg-rose-50' : 'hover:bg-cream-50/60'
+                      }`}
+                    >
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-3">
                           <img
@@ -365,11 +375,12 @@ const AdminProductsPage: React.FC = () => {
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDelete(product.id)}
-                            className="p-2 text-stone-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                            onClick={() => handleDelete(product.id, product.name)}
+                            disabled={deletingId === product.id}
+                            className="p-2 text-stone-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all disabled:opacity-40"
                             title="Hapus Produk"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className={`w-4 h-4 ${deletingId === product.id ? 'animate-spin' : ''}`} />
                           </button>
                         </div>
                       </td>
