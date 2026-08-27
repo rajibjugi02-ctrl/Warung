@@ -26,7 +26,6 @@ const PaymentPage: React.FC = () => {
   const { showToast } = useToast();
   const [order, setOrder] = useState<Order | null>(null);
   const [payment, setPayment] = useState<Payment | null>(null);
-  const [storeSettings, setStoreSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [simulating, setSimulating] = useState(false);
@@ -76,17 +75,8 @@ const PaymentPage: React.FC = () => {
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      try {
-        const [_, setRes] = await Promise.all([
-          fetchStatus(),
-          api.get('/settings').catch(() => null),
-        ]);
-        if (setRes?.data?.data) {
-          setStoreSettings(setRes.data.data);
-        }
-      } finally {
-        setLoading(false);
-      }
+      await fetchStatus();
+      setLoading(false);
     };
     init();
 
@@ -285,7 +275,7 @@ const PaymentPage: React.FC = () => {
                   <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-warung-700 rounded-br-lg" />
 
                   <img
-                    src={storeSettings?.qrisImage || payment.qrisImageUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=WARUNG_LENIRA'}
+                    src={payment.qrisImageUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=WARUNG_LENIRA'}
                     alt="QRIS Code"
                     className="w-56 h-56 sm:w-64 sm:h-64 object-contain rounded-xl"
                   />
@@ -293,16 +283,14 @@ const PaymentPage: React.FC = () => {
 
                 <div className="text-center mb-3">
                   <div className="text-sm font-black text-stone-900 uppercase">
-                    {storeSettings?.qrisMerchantName || 'WARUNG SEMBAKO & JAJANAN LENIRA'}
+                    WARUNG SEMBAKO & JAJANAN LENIRA
                   </div>
-                  {storeSettings?.qrisNmid && (
-                    <div className="text-xs font-semibold text-stone-400">NMID: {storeSettings.qrisNmid}</div>
-                  )}
+                  <div className="text-xs font-semibold text-stone-400">NMID: ID1020039482910</div>
                 </div>
 
                 <div className="flex items-center gap-2 mb-4">
                   <a
-                    href={storeSettings?.qrisImage || payment.qrisImageUrl || '#'}
+                    href={payment.qrisImageUrl || '#'}
                     download={`QRIS-Lenira-${order.orderNumber}.png`}
                     className="inline-flex items-center gap-1.5 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold rounded-xl transition-all shadow-xs"
                   >
@@ -321,65 +309,67 @@ const PaymentPage: React.FC = () => {
             {payment.method !== 'QRIS' && (
               <div className="space-y-4">
                 <div className="text-xs text-stone-600 mb-2">
-                  Silakan transfer ke salah satu rekening bank / e-wallet resmi pemilik Warung Lenira di bawah ini:
+                  Silakan transfer ke salah satu rekening resmi Warung Lenira di bawah ini:
                 </div>
 
-                {storeSettings?.bankAccounts && storeSettings.bankAccounts.filter((b: any) => b.isActive).length > 0 ? (
-                  <div className="space-y-3">
-                    {storeSettings.bankAccounts.filter((b: any) => b.isActive).map((acc: any) => (
-                      <div
-                        key={acc.id}
-                        className="bg-cream-50/80 rounded-2xl p-4 sm:p-5 border border-stone-200/80 hover:border-warung-400 transition-all"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <div className="text-[11px] font-bold uppercase text-stone-500 mb-0.5 flex items-center gap-1.5">
-                              <Building className="w-3.5 h-3.5 text-warung-700" />
-                              <span>{acc.bankName}</span>
-                            </div>
-                            <div className="text-xl sm:text-2xl font-mono font-black text-warung-950 tracking-wider">
-                              {acc.accountNumber}
-                            </div>
-                            <div className="text-xs text-stone-500 mt-1">
-                              Atas Nama: <strong className="text-stone-900 font-bold">{acc.accountHolder}</strong>
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={() => copyText(acc.accountNumber)}
-                            className="p-3 bg-white hover:bg-warung-100 rounded-2xl transition-all text-warung-800 shadow-2xs border border-stone-200 flex-shrink-0"
-                            title="Salin Nomor Rekening"
-                          >
-                            {copied ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : <Copy className="w-5 h-5" />}
-                          </button>
+                <div className="space-y-3">
+                  {/* Bank BRI */}
+                  <div className="bg-cream-50/80 rounded-2xl p-4 sm:p-5 border border-stone-200/80 hover:border-warung-400 transition-all">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-[11px] font-bold uppercase text-stone-500 mb-0.5 flex items-center gap-1.5">
+                          <Building className="w-3.5 h-3.5 text-warung-700" />
+                          <span>Bank BRI</span>
+                        </div>
+                        <div className="text-xl sm:text-2xl font-mono font-black text-warung-950 tracking-wider">
+                          0123-01-045678-50-9
+                        </div>
+                        <div className="text-xs text-stone-500 mt-1">
+                          Atas Nama: <strong className="text-stone-900 font-bold">Leni Herlina</strong>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bg-cream-50 rounded-2xl p-5 border border-stone-200/80">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-[11px] font-bold uppercase text-stone-400 mb-1">Nomor Rekening BRI</div>
-                        <div className="text-2xl font-mono font-black text-warung-900">0123-01-045678-50-9</div>
-                        <div className="text-xs text-stone-500 mt-1">Atas Nama: <strong>Leni Herlina</strong></div>
-                      </div>
+
+                      <button
+                        onClick={() => copyText('012301045678509')}
+                        className="p-3 bg-white hover:bg-warung-100 rounded-2xl transition-all text-warung-800 shadow-2xs border border-stone-200 flex-shrink-0"
+                        title="Salin Nomor Rekening"
+                      >
+                        {copied ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : <Copy className="w-5 h-5" />}
+                      </button>
                     </div>
                   </div>
-                )}
+
+                  {/* DANA / E-Wallet */}
+                  <div className="bg-cream-50/80 rounded-2xl p-4 sm:p-5 border border-stone-200/80 hover:border-warung-400 transition-all">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-[11px] font-bold uppercase text-stone-500 mb-0.5 flex items-center gap-1.5">
+                          <Building className="w-3.5 h-3.5 text-warung-700" />
+                          <span>DANA / E-Wallet</span>
+                        </div>
+                        <div className="text-xl sm:text-2xl font-mono font-black text-warung-950 tracking-wider">
+                          0812-3456-7890
+                        </div>
+                        <div className="text-xs text-stone-500 mt-1">
+                          Atas Nama: <strong className="text-stone-900 font-bold">Leni Herlina</strong>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => copyText('081234567890')}
+                        className="p-3 bg-white hover:bg-warung-100 rounded-2xl transition-all text-warung-800 shadow-2xs border border-stone-200 flex-shrink-0"
+                        title="Salin Nomor DANA"
+                      >
+                        {copied ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : <Copy className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-3.5 text-xs text-amber-950 font-semibold flex items-center gap-2">
                   <span>⚡</span>
                   <span>Transfer tepat sesuai total tagihan: <strong className="text-stone-950">{formatRupiah(payment.amount)}</strong></span>
                 </div>
-              </div>
-            )}
-
-            {/* Custom Instructions from Admin */}
-            {storeSettings?.paymentInstructions && (
-              <div className="mt-4 bg-stone-50 p-4 rounded-2xl border border-stone-200 text-xs text-stone-700 leading-relaxed">
-                <strong className="text-stone-900 block mb-1">📢 Petunjuk Pembayaran:</strong>
-                {storeSettings.paymentInstructions}
               </div>
             )}
 

@@ -6,22 +6,22 @@ import { AuthenticatedRequest } from '../middleware/auth.middleware';
 import { PaymentService } from '../services/payment.service';
 
 const createOrderSchema = z.object({
-  customerName: z.string().min(2, 'Nama pemesan minimal 2 karakter'),
-  customerPhone: z.string().min(8, 'Nomor WhatsApp minimal 8 digit'),
-  customerEmail: z.string().email().optional().or(z.literal('')),
-  deliveryType: z.enum(['PICKUP', 'DELIVERY']),
-  deliveryAddress: z.string().optional(),
+  customerName: z.string().min(1, 'Nama pemesan wajib diisi'),
+  customerPhone: z.string().min(6, 'Nomor WhatsApp wajib diisi'),
+  customerEmail: z.string().optional().nullable(),
+  deliveryType: z.enum(['PICKUP', 'DELIVERY']).default('PICKUP'),
+  deliveryAddress: z.string().optional().nullable(),
   deliveryFee: z.number().default(0),
-  notes: z.string().optional(),
-  couponCode: z.string().optional(),
-  paymentMethod: z.enum(['QRIS', 'BCA_VA', 'BRI_VA', 'BNI_VA', 'MANDIRI_VA', 'GOPAY', 'SHOPEEPAY']),
+  notes: z.string().optional().nullable(),
+  couponCode: z.string().optional().nullable(),
+  paymentMethod: z.string().default('QRIS'),
   items: z
     .array(
       z.object({
         productId: z.string(),
-        variantId: z.string().optional(),
-        variantName: z.string().optional(),
-        price: z.number().optional(),
+        variantId: z.string().optional().nullable(),
+        variantName: z.string().optional().nullable(),
+        price: z.number().optional().nullable(),
         quantity: z.number().int().min(1),
       })
     )
@@ -39,7 +39,12 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
     });
 
     if (products.length !== productIds.length) {
-      return sendError(res, 'Beberapa produk tidak ditemukan atau sudah tidak aktif.', null, 400);
+      return sendError(
+        res,
+        'Beberapa produk di keranjang Anda merupakan data sebelum migrasi database. Silakan klik ikon keranjang, hapus barang lama, dan pilih kembali produk dari katalog.',
+        null,
+        400
+      );
     }
 
     // Check stock
@@ -60,7 +65,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
     let subtotal = 0;
     const orderItemsData = validated.items.map((item) => {
       const product = products.find((p) => p.id === item.productId)!;
-      const price = item.price !== undefined ? item.price : (product.discountPrice ?? product.price);
+      const price = Number(item.price ?? (product.discountPrice ?? product.price));
       const itemSubtotal = price * item.quantity;
       subtotal += itemSubtotal;
 
@@ -138,7 +143,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
       customerName: validated.customerName,
       customerPhone: validated.customerPhone,
       customerEmail: validated.customerEmail || undefined,
-      method: validated.paymentMethod,
+      method: (validated.paymentMethod as any) || 'QRIS',
     });
 
     return sendSuccess(
@@ -151,6 +156,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
       201
     );
   } catch (error: any) {
+    console.error('❌ Error creating order:', error);
     if (error instanceof z.ZodError) {
       return sendError(res, error.errors[0].message, error.errors, 400);
     }
