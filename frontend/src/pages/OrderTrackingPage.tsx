@@ -63,7 +63,7 @@ const OrderTrackingPage: React.FC = () => {
 
   const timelineIndex = getTimelineIndex(order.orderStatus, order.paymentStatus);
   const waMsg = `Halo Warung Lenira, saya ingin menanyakan status pesanan saya dengan nomor ${order.orderNumber}. Terima kasih!`;
-  const waLink = generateWhatsAppLink('081234567890', waMsg);
+  const waLink = generateWhatsAppLink('62895333691222', waMsg);
   const handlePrint = () => window.print();
 
   return (
