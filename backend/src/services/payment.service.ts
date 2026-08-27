@@ -74,6 +74,7 @@ export class PaymentService {
       const bankPrefixes: Record<string, string> = {
         BCA: '80777',
         BRI: '10888',
+        BSI: '736',
         BNI: '8808',
         MANDIRI: '89000',
       };
