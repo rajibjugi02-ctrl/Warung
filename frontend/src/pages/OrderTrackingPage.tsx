@@ -62,7 +62,16 @@ const OrderTrackingPage: React.FC = () => {
   }
 
   const timelineIndex = getTimelineIndex(order.orderStatus, order.paymentStatus);
-  const waMsg = `Halo Warung Lenira, saya ingin menanyakan status pesanan saya dengan nomor ${order.orderNumber}. Terima kasih!`;
+  const itemNames = (order.items || []).map((i) => `• ${i.productName}${i.variantName ? ` (${i.variantName})` : ''} x${i.quantity}`).join('\n');
+  const waMsg = `Halo Warung Lenira, saya ingin menanyakan status pesanan saya:
+📋 No. Pesanan: *${order.orderNumber}*
+👤 Nama: *${order.customerName}*
+
+📦 Produk yang dibeli:
+${itemNames}
+
+💰 Total Pembayaran: *${formatRupiah(order.totalAmount)}*
+Terima kasih!`;
   const waLink = generateWhatsAppLink('62895333691222', waMsg);
   const handlePrint = () => window.print();
 
