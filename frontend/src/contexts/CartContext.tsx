@@ -41,7 +41,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return [];
   });
 
-  const [deliveryType, setDeliveryType] = useState<'PICKUP' | 'DELIVERY'>('DELIVERY');
+  const [deliveryType, setDeliveryType] = useState<'PICKUP' | 'DELIVERY'>('PICKUP');
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(() => {
     const saved = localStorage.getItem('warung_coupon');
     if (saved) {
