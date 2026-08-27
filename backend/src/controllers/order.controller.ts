@@ -103,6 +103,18 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
     const deliveryFee = validated.deliveryType === 'DELIVERY' ? Number(validated.deliveryFee || 5000) : 0;
     const totalAmount = Math.max(0, subtotal - discountAmount + deliveryFee);
 
+    // Verify userId exists in DB (safe against stale tokens across DB migrations)
+    let validUserId: string | null = null;
+    if (req.user?.userId) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: req.user.userId },
+        select: { id: true },
+      });
+      if (userExists) {
+        validUserId = userExists.id;
+      }
+    }
+
     // Generate Order Number: LEN-YYYYMMDD-XXXX
     const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -112,7 +124,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
     const order = await prisma.order.create({
       data: {
         orderNumber,
-        userId: req.user?.userId || null,
+        userId: validUserId,
         customerName: validated.customerName,
         customerPhone: validated.customerPhone,
         customerEmail: validated.customerEmail || null,

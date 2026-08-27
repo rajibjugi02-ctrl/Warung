@@ -167,10 +167,21 @@ export const addProductReview = async (req: AuthenticatedRequest, res: Response)
 
     const nameToUse = req.user?.name || userName || 'Pelanggan Lenira';
 
+    let validUserId: string | null = null;
+    if (req.user?.userId) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: req.user.userId },
+        select: { id: true },
+      });
+      if (userExists) {
+        validUserId = userExists.id;
+      }
+    }
+
     const review = await prisma.review.create({
       data: {
         productId: id,
-        userId: req.user?.userId || null,
+        userId: validUserId,
         userName: nameToUse,
         rating: Number(rating),
         comment,
