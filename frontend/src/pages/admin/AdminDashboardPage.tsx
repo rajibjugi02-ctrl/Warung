@@ -16,6 +16,7 @@ import {
   X,
   ExternalLink,
   Store,
+  CreditCard,
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { formatRupiah, formatDate } from '../../utils/format';
@@ -41,6 +42,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title: string }>
     { to: '/admin/produk', label: 'Produk', icon: Package },
     { to: '/admin/titip', label: 'Titip Jajanan', icon: Handshake },
     { to: '/admin/banner', label: 'Banner Beranda', icon: Sparkles },
+    { to: '/admin/pembayaran', label: 'Pengaturan Pembayaran', icon: CreditCard },
     { to: '/admin/ulasan', label: 'Ulasan Pembeli', icon: MessageSquare },
     { to: '/admin/pesanan', label: 'Pesanan', icon: ClipboardList },
     { to: '/admin/laporan', label: 'Laporan', icon: BarChart2 },

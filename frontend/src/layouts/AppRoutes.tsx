@@ -19,6 +19,7 @@ import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import AdminProductsPage from '../pages/admin/AdminProductsPage';
 import AdminConsignmentPage from '../pages/admin/AdminConsignmentPage';
 import AdminBannerSettingsPage from '../pages/admin/AdminBannerSettingsPage';
+import AdminPaymentSettingsPage from '../pages/admin/AdminPaymentSettingsPage';
 import AdminReviewsPage from '../pages/admin/AdminReviewsPage';
 import AdminOrdersPage from '../pages/admin/AdminOrdersPage';
 import AdminReportsPage from '../pages/admin/AdminReportsPage';
@@ -96,6 +97,14 @@ const AppRoutes: React.FC = () => {
           element={
             <AdminRoute>
               <AdminBannerSettingsPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/pembayaran"
+          element={
+            <AdminRoute>
+              <AdminPaymentSettingsPage />
             </AdminRoute>
           }
         />

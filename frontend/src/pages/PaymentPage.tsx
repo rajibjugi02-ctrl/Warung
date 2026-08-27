@@ -10,10 +10,8 @@ import {
   ExternalLink,
   Smartphone,
   Building,
-  Wallet,
   Zap,
   Download,
-  ShieldCheck,
   ArrowLeft,
 } from 'lucide-react';
 import { api } from '../services/api';
@@ -28,6 +26,7 @@ const PaymentPage: React.FC = () => {
   const { showToast } = useToast();
   const [order, setOrder] = useState<Order | null>(null);
   const [payment, setPayment] = useState<Payment | null>(null);
+  const [storeSettings, setStoreSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [simulating, setSimulating] = useState(false);
@@ -77,8 +76,17 @@ const PaymentPage: React.FC = () => {
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await fetchStatus();
-      setLoading(false);
+      try {
+        const [_, setRes] = await Promise.all([
+          fetchStatus(),
+          api.get('/settings').catch(() => null),
+        ]);
+        if (setRes?.data?.data) {
+          setStoreSettings(setRes.data.data);
+        }
+      } finally {
+        setLoading(false);
+      }
     };
     init();
 
@@ -253,18 +261,21 @@ const PaymentPage: React.FC = () => {
         {/* Payment Instructions for PENDING */}
         {isPending && (
           <div className="bg-white rounded-3xl shadow-card border border-stone-200/80 p-6 sm:p-8 mb-5">
-            <h2 className="font-extrabold text-stone-900 mb-5 flex items-center gap-2 text-base sm:text-lg border-b border-stone-100 pb-3">
-              {payment.method === 'QRIS' ? (
-                <><Smartphone className="w-5 h-5 text-warung-700" /> Scan QRIS Resmi Toko</>
-              ) : payment.method.endsWith('_VA') ? (
-                <><Building className="w-5 h-5 text-warung-700" /> Transfer Virtual Account</>
-              ) : (
-                <><Wallet className="w-5 h-5 text-warung-700" /> Pembayaran E-Wallet Langsung</>
-              )}
+            <h2 className="font-extrabold text-stone-900 mb-5 flex items-center justify-between text-base sm:text-lg border-b border-stone-100 pb-3">
+              <span className="flex items-center gap-2">
+                {payment.method === 'QRIS' ? (
+                  <><Smartphone className="w-5 h-5 text-warung-700" /> Scan QRIS Resmi Toko</>
+                ) : (
+                  <><Building className="w-5 h-5 text-warung-700" /> Transfer Bank & E-Wallet Toko</>
+                )}
+              </span>
+              <span className="text-xs font-bold text-warung-800 bg-warung-50 px-3 py-1 rounded-full border border-warung-200 hidden sm:inline-block">
+                Warung Lenira
+              </span>
             </h2>
 
             {/* QRIS Frame */}
-            {payment.method === 'QRIS' && payment.qrisImageUrl && (
+            {payment.method === 'QRIS' && (
               <div className="flex flex-col items-center">
                 <div className="relative bg-white rounded-3xl p-5 border-2 border-stone-200 shadow-soft mb-4 group">
                   {/* QR Scan Corners */}
@@ -274,15 +285,24 @@ const PaymentPage: React.FC = () => {
                   <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-warung-700 rounded-br-lg" />
 
                   <img
-                    src={payment.qrisImageUrl}
+                    src={storeSettings?.qrisImage || payment.qrisImageUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=WARUNG_LENIRA'}
                     alt="QRIS Code"
                     className="w-56 h-56 sm:w-64 sm:h-64 object-contain rounded-xl"
                   />
                 </div>
 
+                <div className="text-center mb-3">
+                  <div className="text-sm font-black text-stone-900 uppercase">
+                    {storeSettings?.qrisMerchantName || 'WARUNG SEMBAKO & JAJANAN LENIRA'}
+                  </div>
+                  {storeSettings?.qrisNmid && (
+                    <div className="text-xs font-semibold text-stone-400">NMID: {storeSettings.qrisNmid}</div>
+                  )}
+                </div>
+
                 <div className="flex items-center gap-2 mb-4">
                   <a
-                    href={payment.qrisImageUrl}
+                    href={storeSettings?.qrisImage || payment.qrisImageUrl || '#'}
                     download={`QRIS-Lenira-${order.orderNumber}.png`}
                     className="inline-flex items-center gap-1.5 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold rounded-xl transition-all shadow-xs"
                   >
@@ -291,75 +311,97 @@ const PaymentPage: React.FC = () => {
                   </a>
                 </div>
 
-                <p className="text-xs sm:text-sm text-stone-600 text-center mb-3 leading-relaxed max-w-sm">
-                  Scan kode QR di atas menggunakan aplikasi <strong>GoPay, OVO, Dana, ShopeePay, BCA</strong>, atau Mobile Banking lainnya.
+                <p className="text-xs sm:text-sm text-stone-600 text-center mb-4 leading-relaxed max-w-sm">
+                  Scan kode QR di atas menggunakan aplikasi <strong>GoPay, OVO, Dana, ShopeePay, BCA, BRI</strong>, atau Mobile Banking lainnya.
                 </p>
-                <div className="inline-flex items-center gap-1 text-xs text-warung-800 font-bold bg-warung-50 px-3 py-1.5 rounded-full border border-warung-200">
-                  <ShieldCheck className="w-4 h-4 text-warung-700" />
-                  <span>Verifikasi Otomatis Tanpa Upload Bukti</span>
-                </div>
               </div>
             )}
 
-            {/* Virtual Account */}
-            {payment.method.endsWith('_VA') && payment.vaNumber && (
+            {/* Bank Transfer / VA Accounts List */}
+            {payment.method !== 'QRIS' && (
               <div className="space-y-4">
-                <div className="bg-cream-50 rounded-2xl p-5 border border-stone-200/80">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-[11px] font-bold uppercase text-stone-400 mb-1">Nomor Virtual Account {payment.bankName}</div>
-                      <div className="text-2xl sm:text-3xl font-mono font-black text-warung-900 tracking-wider">
-                        {payment.vaNumber}
+                <div className="text-xs text-stone-600 mb-2">
+                  Silakan transfer ke salah satu rekening bank / e-wallet resmi pemilik Warung Lenira di bawah ini:
+                </div>
+
+                {storeSettings?.bankAccounts && storeSettings.bankAccounts.filter((b: any) => b.isActive).length > 0 ? (
+                  <div className="space-y-3">
+                    {storeSettings.bankAccounts.filter((b: any) => b.isActive).map((acc: any) => (
+                      <div
+                        key={acc.id}
+                        className="bg-cream-50/80 rounded-2xl p-4 sm:p-5 border border-stone-200/80 hover:border-warung-400 transition-all"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <div className="text-[11px] font-bold uppercase text-stone-500 mb-0.5 flex items-center gap-1.5">
+                              <Building className="w-3.5 h-3.5 text-warung-700" />
+                              <span>{acc.bankName}</span>
+                            </div>
+                            <div className="text-xl sm:text-2xl font-mono font-black text-warung-950 tracking-wider">
+                              {acc.accountNumber}
+                            </div>
+                            <div className="text-xs text-stone-500 mt-1">
+                              Atas Nama: <strong className="text-stone-900 font-bold">{acc.accountHolder}</strong>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => copyText(acc.accountNumber)}
+                            className="p-3 bg-white hover:bg-warung-100 rounded-2xl transition-all text-warung-800 shadow-2xs border border-stone-200 flex-shrink-0"
+                            title="Salin Nomor Rekening"
+                          >
+                            {copied ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : <Copy className="w-5 h-5" />}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-cream-50 rounded-2xl p-5 border border-stone-200/80">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-[11px] font-bold uppercase text-stone-400 mb-1">Nomor Rekening BRI</div>
+                        <div className="text-2xl font-mono font-black text-warung-900">0123-01-045678-50-9</div>
+                        <div className="text-xs text-stone-500 mt-1">Atas Nama: <strong>Leni Herlina</strong></div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => copyText(payment.vaNumber!)}
-                      className="p-3 bg-warung-100 hover:bg-warung-200 rounded-2xl transition-all text-warung-800 shadow-xs"
-                      title="Salin Nomor VA"
-                    >
-                      {copied ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : <Copy className="w-5 h-5" />}
-                    </button>
                   </div>
-                </div>
-                <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-3.5 text-xs text-amber-900 font-medium flex items-center gap-2">
+                )}
+
+                <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-3.5 text-xs text-amber-950 font-semibold flex items-center gap-2">
                   <span>⚡</span>
-                  <span>Transfer tepat sesuai nominal: <strong>{formatRupiah(payment.amount)}</strong></span>
+                  <span>Transfer tepat sesuai total tagihan: <strong className="text-stone-950">{formatRupiah(payment.amount)}</strong></span>
                 </div>
-                <ol className="space-y-2 text-xs text-stone-600 pt-2">
-                  <li className="flex gap-2"><span className="font-bold text-warung-800">1.</span> Buka aplikasi M-Banking atau ATM {payment.bankName}</li>
-                  <li className="flex gap-2"><span className="font-bold text-warung-800">2.</span> Pilih menu Transfer &gt; Virtual Account</li>
-                  <li className="flex gap-2"><span className="font-bold text-warung-800">3.</span> Masukkan nomor Virtual Account di atas</li>
-                  <li className="flex gap-2"><span className="font-bold text-warung-800">4.</span> Konfirmasi dan selesaikan transaksi</li>
-                </ol>
               </div>
             )}
 
-            {/* E-Wallet */}
-            {(payment.method === 'GOPAY' || payment.method === 'SHOPEEPAY') && payment.qrisImageUrl && (
-              <div className="flex flex-col items-center gap-4">
-                <div className="bg-white rounded-3xl p-4 border border-stone-200 shadow-card">
-                  <img src={payment.qrisImageUrl} alt="E-Wallet QR" className="w-48 h-48 object-contain" />
-                </div>
-                {payment.paymentUrl && (
-                  <a
-                    href={payment.paymentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold transition-all shadow-md active:scale-95"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Buka Aplikasi {payment.method === 'GOPAY' ? 'GoPay' : 'ShopeePay'}
-                  </a>
-                )}
+            {/* Custom Instructions from Admin */}
+            {storeSettings?.paymentInstructions && (
+              <div className="mt-4 bg-stone-50 p-4 rounded-2xl border border-stone-200 text-xs text-stone-700 leading-relaxed">
+                <strong className="text-stone-900 block mb-1">📢 Petunjuk Pembayaran:</strong>
+                {storeSettings.paymentInstructions}
               </div>
             )}
+
+            {/* WhatsApp Confirmation Button */}
+            <div className="mt-5 pt-4 border-t border-stone-100">
+              <a
+                href={`https://wa.me/6281234567890?text=Halo%20Warung%20Lenira%2C%20saya%20sudah%20melakukan%20pembayaran%20untuk%20pesanan%20${order.orderNumber}%20sebesar%20${formatRupiah(order.totalAmount)}.%20Mohon%20dicek%20ya%20terima%20kasih!`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-extrabold rounded-2xl transition-all shadow-sm active:scale-98"
+              >
+                <span>Kirim Bukti Pembayaran via WhatsApp</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
 
             {/* Sandbox Simulate Button */}
-            <div className="mt-8 pt-5 border-t border-stone-100">
+            <div className="mt-5 pt-4 border-t border-stone-100">
               <button
                 onClick={handleSimulateSuccess}
                 disabled={simulating}
-                className="w-full flex items-center justify-center gap-2 py-3.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold rounded-2xl transition-all shadow-sm disabled:opacity-60 active:scale-98"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold rounded-2xl transition-all shadow-sm disabled:opacity-60 active:scale-98"
               >
                 {simulating ? (
                   <><RefreshCw className="w-4 h-4 animate-spin" /> Memproses Verifikasi...</>
@@ -367,9 +409,6 @@ const PaymentPage: React.FC = () => {
                   <><Zap className="w-4 h-4 text-amber-400" /> 🧪 Simulasi Selesaikan Pembayaran (Test Mode)</>
                 )}
               </button>
-              <p className="text-[11px] text-stone-400 text-center mt-2">
-                Tombol simulasi ini aktif untuk memudahkan pengujian di mode development.
-              </p>
             </div>
           </div>
         )}
